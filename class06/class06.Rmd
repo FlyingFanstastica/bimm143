@@ -1,0 +1,70 @@
+---
+title: 'Class 6: R function'
+author: "Xiao"
+date: "2019/4/18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### About
+This is for **class 06** including *code*.
+
+```{r}
+plot(1: 10, typ = "l", col = "blue")
+```
+```{r}
+read.table("test1.txt", header = TRUE, sep = ",")
+```
+
+
+```{r}
+read.table("test2.txt", header = TRUE, sep = "$")
+
+```
+```{r}
+read.table("test3.txt")
+```
+
+## Function
+
+Our first genius function example:
+
+```{r}
+add <- function(x, y = 1) {
+  # The body??
+  x + y 
+}
+```
+```{r}
+add(10, y = 10)
+```
+
+```{r}
+rescale <- function(x) {
+ rng <- range(x)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+
+
+```{r}
+rescale <- function(x, na.rm = TRUE, plot = FALSE) {
+ rng <-range(x, na.rm = na.rm)
+ print("Hello")
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ if(plot) {
+  plot(answer, typ = "b", lwd = 4)
+ }
+ print("I can see it in ...")
+ return(answer)
+}
+```
+```{r}
+rescale(1: 10, plot = TRUE)
+```
+
