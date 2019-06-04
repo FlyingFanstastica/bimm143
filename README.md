@@ -8,7 +8,7 @@ Classwork from [bimm143](https://bioboot.github.io/bimm143_S19/) in SP19 at UCSD
 
 - class 07: [CRAN and BioConductor ](https://github.com/FlyingFanstastica/bimm143/blob/master/class07/class07.md)
 
-- class 08: [Machine learning for Bioinformatics](https://github.com/FlyingFanstastica/bimm143/tree/master/class08.md)
+- class 08: [Machine learning for Bioinformatics](https://github.com/FlyingFanstastica/bimm143/blob/master/class08/class08.md)
 
 - class 09: [Mini project](https://github.com/FlyingFanstastica/bimm143/tree/master/class09.md)
 
