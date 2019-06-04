@@ -1,0 +1,202 @@
+---
+title: "class14"
+author: "Xiao"
+date: "2019/5/16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(BiocManager)
+```
+
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", stringsAsFactors = FALSE, row.names = 1)
+metadata <-  read.csv("airway_metadata.csv", stringsAsFactors = FALSE)
+head(counts)
+head(metadata)
+```
+
+```{r}
+View(metadata)
+control <- metadata[metadata[,"dex"]=="control",]
+control.mean <- rowSums( counts[ ,control$id] ) / 4 
+names(control.mean) <- counts$ensgene
+```
+
+lets check the corespondece of our two samples 
+```{r}
+all(colnames(counts) == metadata$id)
+```
+
+# Section 3. Walk through of gene expression analysis
+Our metadata file tells us which columns of the countdata are drug treated and control
+```{r}
+control.inds <- metadata$dex == "control"
+control <- metadata[control.inds, ]
+control
+head(counts[, control$id])
+```
+
+Determine the mean count values for all genes across control experiments
+```{r}
+control.mean <- rowSums(counts[, control$id]) / length(control$id)
+```
+
+Do the same things for treated experiments
+```{r}
+treated.inds <- metadata$dex == "treated"
+treated <- metadata[treated.inds, ]
+treated
+head(counts[, treated$id])
+treated.mean <- rowSums(counts[, treated$id]) / length(treated$id)
+```
+
+Store the control.mean and treated.mean together for ease of use
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+```
+
+What is the sum counts accross all genes in control and treated
+```{r}
+colSums(meancounts)
+```
+
+```{r}
+plot(meancounts)
+```
+
+Plot a log-log sacle so we can see our data
+```{r}
+plot(meancounts, log = "xy")
+```
+
+```{r}
+meancounts$log2fc <- log2(meancounts[,"treated.mean"]/meancounts[,"control.mean"])
+head(meancounts)
+to.rm <- unique(which(meancounts[, 1:2] == 0, arr.ind = T)[, 1])
+zero.vals <- which(meancounts[,1:2]==0, arr.ind=TRUE)
+
+to.rm <- unique(zero.vals[,1])
+mycounts <- meancounts[-to.rm,]
+head(mycounts)
+```
+
+How many genes are up in the drug treated cells
+```{r}
+up.inds <- mycounts$log2fc > 2
+sum(up.inds)
+```
+
+and how many are down in the drug treated cells
+```{r}
+down.inds <- mycounts$log2fc < -2
+sum(down.inds)
+```
+
+```{r}
+head(mycounts[up.inds,])
+```
+
+## Section 4. Adding annotation adata
+
+We can add annotation from a supplied CSV file, such as those available from ENSEMBLE or UCSC. The annotables_grch38.csv annotation table links the unambiguous Ensembl gene ID to other useful annotation like the gene symbol, full gene name, location, Entrez gene ID, etc.
+
+```{r}
+anno <- read.csv("annotables_grch38.csv")
+head(anno)
+```
+Use the **merge()** function to add the annotation data from the 'anno' object to out RNA-Seq results in 'mycounts'
+
+```{r}
+mycounts.anno <- merge(mycounts, anno, by.x = "row.names", by.y = "ensgene")
+mycounts.anno
+```
+
+In cases where you don’t have a preferred annotation file at hand you can use other Bioconductor packages for annotation.
+```{r}
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+```
+
+```{r}
+columns(org.Hs.eg.db)
+```
+
+We will use the **mapIds()**function from bioconductor to add annotation data to our results
+```{r}
+mycounts$symbol <- mapIds(org.Hs.eg.db,
+                          keys = row.names(mycounts), # The gene names in out dataset
+                          column = "SYMBOL",          # WHat new data do we want to add
+                          keytype = "ENSEMBL",        # Format of our gene names
+                          multiVals = "first")
+```
+
+```{r}
+head(mycounts)
+```
+
+```{r}
+mycounts$entrez <- mapIds(org.Hs.eg.db,
+                          keys = row.names(mycounts), # The gene names in out dataset
+                          column = "ENTREZID",        # WHat new data do we want to add
+                          keytype = "ENSEMBL",        # Format of our gene names 
+                          multiVals = "first")
+```
+
+## Section 5. DESeq2 analysis
+```{r}
+library(DESeq2)
+citation("DESeq2")
+```
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", stringsAsFactors = FALSE)
+metadata <-  read.csv("airway_metadata.csv", stringsAsFactors = FALSE)
+dds <- DESeqDataSetFromMatrix(countData = counts, 
+                              colData = metadata, 
+                              design = ~dex, 
+                              tidy = T)
+dds
+```
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+summary(res)
+```
+
+```{r}
+res05 <- results(dds, alpha = 0.05)
+head(res05)
+summary(res05)
+```
+
+```{r}
+res01 <- as.data.frame(results(dds, alpha = 0.01))
+head(res01)
+```
+
+Let's sort our order results by the adjested p-value
+```{r}
+ord.inds <- order( res01$padj )
+write.csv(res01[ord.inds, ], file = "signal01_results.csv")
+```
+
+Volcano plot
+```{r}
+mycols <- rep("gray", nrow(res01))
+mycols[res01$padj < 0.01] <- "black"
+#mycols[abs(res01$log2FoldChange) > 2] <- "blue"
+mycols[(res01$padj) < 0.01 & (abs(res01$log2FoldChange) > 2)] <- "red"
+plot(res01$log2FoldChange, -log(res01$padj), ylab="-Log(P-value)", xlab="Log2(FoldChange)", col = mycols)
+
+```
+
