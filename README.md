@@ -24,4 +24,6 @@ Classwork from [bimm143](https://bioboot.github.io/bimm143_S19/) in SP19 at UCSD
 
 - class 16: [Essential UNIX for bioinformatics](https://github.com/FlyingFanstastica/bimm143/tree/master/class16)
 
-- class 18: [Cancer genomics](https://github.com/FlyingFanstastica/bimm143/tree/master/class18)
+- class 17: [Biological network analysis ]()
+
+- class 18: [Cancer genomics](https://github.com/FlyingFanstastica/bimm143/blob/master/class18/class18.md)
