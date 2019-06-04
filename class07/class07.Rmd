@@ -2,7 +2,7 @@
 title: 'Class 7: R functions ad packages'
 author: "Xiao"
 date: "2019/4/23"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -25,7 +25,7 @@ rescale(1: 10)
 
 Try the rescale2() functions that catches string inputs
 ```{r}
-rescale2(c(1: 10, "string"))
+#rescale2(c(1: 10, "string"))
 ```
 
 # Find missing NA values in two vectors
@@ -76,7 +76,7 @@ both_na(x, y2)
 
 Now lets try the new both_na2 function on our different length input vectors
 ```{r}
-both_na2(x, y2)
+#both_na2(x, y2)
 ```
 
 ```{r}
